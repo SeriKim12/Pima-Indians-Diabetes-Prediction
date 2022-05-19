@@ -1,0 +1,71 @@
+import pandas as pd
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Flatten, Dense
+from tensorflow.keras.optimizers import Adam
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.callbacks import EarlyStopping
+from sklearn import metrics
+
+data = pd.read_csv('diabetes.csv')
+data.info()
+
+X = data.iloc[:, :8]
+y = data.iloc[:, 8:]
+
+# 데이터 정규화
+scaler = MinMaxScaler()
+scaler.fit(X)
+norm_X = scaler.transform(X)
+
+norm_X_train, norm_X_test, y_train, y_test = train_test_split(norm_X, y, test_size=.25)
+
+model = Sequential()
+
+model.add(Flatten())
+model.add(Dense(units=16, activation='relu'))
+model.add(Dense(units=8, activation='relu'))
+model.add(Dense(units=1, activation='sigmoid'))
+
+model.compile(optimizer=Adam(learning_rate=0.0001), 
+              loss='binary_crossentropy',
+             metrics=['accuracy'])
+
+earlyStopping = EarlyStopping(verbose = 1, monitor='accuracy', patience=10)
+
+history0 = model.fit(norm_X_train, y, epochs=50, verbose=1, batch_size = 10, validation_split=0.2, callbacks=earlyStopping)
+
+'''
+
+Epoch 1/50
+46/46 [==============================] - 0s 3ms/step - loss: 0.7102 - accuracy: 0.4022 - val_loss: 0.7362 - val_accuracy: 0.2414
+Epoch 2/50
+46/46 [==============================] - 0s 1ms/step - loss: 0.7033 - accuracy: 0.4196 - val_loss: 0.7210 - val_accuracy: 0.2931
+Epoch 3/50
+46/46 [==============================] - 0s 1ms/step - loss: 0.6975 - accuracy: 0.4500 - val_loss: 0.7089 - val_accuracy: 0.3966
+중간 생략
+Epoch 25/50
+46/46 [==============================] - 0s 997us/step - loss: 0.6639 - accuracy: 0.6196 - val_loss: 0.6046 - val_accuracy: 0.8017
+Epoch 26/50
+46/46 [==============================] - 0s 1ms/step - loss: 0.6637 - accuracy: 0.6196 - val_loss: 0.6029 - val_accuracy: 0.8017
+Epoch 26: early stopping
+'''
+
+
+
+history1 = model.fit(norm_X_train, y, epochs=200, verbose=1, batch_size = 10, validation_split=0.2)
+'''
+Epoch 1/200
+46/46 [==============================] - 0s 953us/step - loss: 0.6576 - accuracy: 0.6261 - val_loss: 0.5995 - val_accuracy: 0.7845
+Epoch 2/200
+46/46 [==============================] - 0s 975us/step - loss: 0.6576 - accuracy: 0.6261 - val_loss: 0.5992 - val_accuracy: 0.7845
+Epoch 3/200
+46/46 [==============================] - 0s 1ms/step - loss: 0.6575 - accuracy: 0.6261 - val_loss: 0.5994 - val_accuracy: 0.7845
+중간 생략
+Epoch 198/200
+46/46 [==============================] - 0s 1ms/step - loss: 0.6552 - accuracy: 0.6304 - val_loss: 0.6005 - val_accuracy: 0.7845
+Epoch 199/200
+46/46 [==============================] - 0s 1ms/step - loss: 0.6552 - accuracy: 0.6304 - val_loss: 0.6001 - val_accuracy: 0.7845
+Epoch 200/200
+46/46 [==============================] - 0s 1ms/step - loss: 0.6553 - accuracy: 0.6304 - val_loss: 0.5994 - val_accuracy: 0.7845
+'''
